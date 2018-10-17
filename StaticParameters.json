@@ -1,0 +1,188 @@
+[{
+	"ParameterKey": "ALBName",
+	"ParameterValue": "edfc-alb",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "ALBSecurityGroupName",
+	"ParameterValue": "edfc-alb-sg",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "AsgDesiredSize",
+	"ParameterValue": "1",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "AsgMaxSize",
+	"ParameterValue": "5",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "AsgMinSize",
+	"ParameterValue": "3",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "EbsVolumeSize",
+	"ParameterValue": "0",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "EbsVolumeType",
+	"ParameterValue": "gp2",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "EC2RoleName",
+	"ParameterValue": "edfc-ec2-role",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "VpcId",
+	"ParameterValue": "vpc-05ec47bfdb5ca1bdc"
+},
+{
+	"ParameterKey": "VpcCidr",
+	"ParameterValue": "172.31.0.0/16",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "LambdaZipBucketName",
+	"ParameterValue": "edfc-qa-nonprod-lambda-packages-bucket",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "NATSubnetIds",
+	"ParameterValue": "subnet-058aaf02f1a3185e5,subnet-063551cc1248d4622",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "SubnetCidr1",
+	"ParameterValue": "10.218.234.128/26",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "SubnetCidr2",
+	"ParameterValue": "10.218.234.192/26",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "SubnetCidr3",
+	"ParameterValue": "172.31.32.0/20",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "SubnetIds",
+	"ParameterValue": "subnet-058aaf02f1a3185e5,subnet-063551cc1248d4622",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "TargetGroupName",
+	"ParameterValue": "edfc-alb-default-tg",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "NumRedisClusterNodes",
+	"ParameterValue": "1",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "LambdaUpdateZipName",
+	"ParameterValue": "edflambdabucket-update.zip",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "LambdaS3ExecutionRoleName",
+	"ParameterValue": "edfc-lambda-role",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "ECSClusterName",
+	"ParameterValue": "edfc-clstr",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "RedisClusterName",
+	"ParameterValue": "edfc-redis-cluster",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "KeyName",
+	"ParameterValue": "edfcloudpair-qa-nonprod",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "EDFServiceAccount",
+	"ParameterValue": "svc-edf-user-edf-qa",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "HTTPProxy",
+	"ParameterValue": "http://vra-prod-us-west-2-proxy.foxinc.com:8080",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "EDFCLambdaUpdateFunctionName",
+	"ParameterValue": "edfc-lambda-update-cache",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "EDFCLambdaRemoveFunctionName",
+	"ParameterValue": "edfc-lambda-remove-cache",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "ECSRoleName",
+	"ParameterValue": "edfc-ecs-role",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "EcsInstanceType",
+	"ParameterValue": "t2.large",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "ECSInstanceSecurityGroupName",
+	"ParameterValue": "edfc-ecsinstance-sg",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "EcsAmiId",
+	"ParameterValue": "ami-baa236c2",
+	"ResolvedValue": "",
+	"UsePreviousValue": false
+},
+{
+	"ParameterKey": "EDFCertArn",
+	"ParameterValue": "arn:aws:acm:us-west-2:162223747623:certificate/342a2e03-06bf-47ee-8070-8d9c25cef1aa"
+}]

@@ -1,0 +1,500 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  EDFc AWS CloudFormation template to create a static 
+  resources. That means, these resources will be created 
+  only once while setting up a new environment. 
+  Despite static, before creating even this stack, one will
+  have to create the following resources manually:
+  1) An S3 Bucket: the purpose is to hold Lambda code zip file
+        Parameter: LambdaZipBucketName
+  2) Zip File - Upload a zip file to the S3 bucket. The file will
+  contain lambda function code
+        Parameter: LambdaZipName
+  3) NAT Gateway: 
+  4) Internet Gateway:
+  5) Vpc
+  6) Subnets associated to NAT Gateway in each AZ
+  7) Subnets associated to Internet Gateway in each AZ
+  ??8) Subnet in one of the AZs associated to NAT and Internet Gateway
+  ami-baa236c2 for us-west-2
+Parameters:
+  ECSClusterName:
+    Type: String
+    Description: >
+      Specifies the name of the ECS Cluster. This will also be used to name various
+      resources. It is mandatory.
+    Default: edfc-clstr
+  EcsAmiId:
+    Type: String
+    Description: Specifies the AMI ID for your container instances.
+    Default: ami-ef64528a
+  EcsInstanceType:
+    Type: CommaDelimitedList
+    Description: >
+      Specifies the EC2 instance type for your container instances.
+      Defaults to m4.large
+    #Default: t2.micro
+    Default: t2.large
+    ConstraintDescription: must be a valid EC2 instance type.
+  KeyName:
+    Type: String
+    Description: >
+      Optional - Specifies the name of an existing Amazon EC2 key pair
+      to enable SSH access to the EC2 instances in your cluster.
+    Default: edfcloudpair
+  VpcId:
+    Type: String
+    Description: >
+      Optional - Specifies the ID of an existing VPC in which to launch
+      your container instances. If you specify a VPC ID, you must specify a list of
+      existing subnets in that VPC. If you do not specify a VPC ID, a new VPC is created
+      with atleast 1 subnet.
+    Default: vpc-b6d9c9df    
+  SubnetIds:
+    Type: CommaDelimitedList
+    Description: >
+      Optional - Specifies the Comma separated list of existing VPC Subnet
+      Ids where ECS instances will run.
+    Default: subnet-0173547a,subnet-df48aeb7,subnet-3b2e4f76
+  ALBSecurityGroupName:
+    Type: String
+    Description: Name of the security group to access ALB
+    Default: edfc-alb-sg
+  ECSInstanceSecurityGroupName:
+    Type: String
+    Description: Name of the security group to access ALB
+    Default: edfc-ecsinstance-sg  
+  AsgMinSize:
+    Type: Number
+    Description: >
+      Specifies the number of instances to launch and register to the cluster.
+      Defaults to 1.
+    Default: '3'
+  AsgMaxSize:
+    Type: Number
+    Description: >
+      Specifies the number of instances to launch and register to the cluster.
+      Defaults to 1.
+    Default: '15'
+  AsgDesiredSize:
+    Type: Number
+    Description: >
+      Specifies the number of instances to launch and register to the cluster.
+      Defaults to 1.
+    Default: '1'
+  EC2RoleName:
+    Type: String
+    Description: >
+      Specifies the Name or the Amazon Resource Name (ARN) of the instance
+      profile associated with the IAM role for the instance
+    Default: edfc-ec2-role
+  ECSRoleName:
+    Type: String
+    Description: >
+      Specifies the Name or the Amazon Resource Name (ARN) of the instance
+      profile associated with the IAM role for the instance
+    Default: edfc-ecs-role
+  LambdaS3ExecutionRoleName:
+    Type: String
+    Description: >
+      Specifies the Name or the Amazon Resource Name (ARN) of the instance
+      profile associated with the IAM role for the instance
+    Default: edfc-lambda-role
+  EcsEndpoint:
+    Type: String
+    Description: >
+      Optional - Specifies the ECS Endpoint for the ECS Agent to connect to
+    Default: ''
+  EbsVolumeSize:
+    Type: Number
+    Description: >
+      Optional - Specifies the Size in GBs, of the newly created Amazon
+      Elastic Block Store (Amazon EBS) volume
+    Default: '0'
+  EbsVolumeType:
+    Type: String
+    Description: Optional - Specifies the Type of (Amazon EBS) volume
+    Default: gp2
+    AllowedValues:
+      - ''
+      - standard
+      - io1
+      - gp2
+      - sc1
+      - st1
+    ConstraintDescription: Must be a valid EC2 volume type.
+  DeviceName:
+    Type: String
+    Description: Optional - Specifies the device mapping for the Volume
+    Default: ''
+  ALBName:
+    Type: String
+    Description: Name of the Application Load Balancer for EDFc
+    Default: 'edfc-alb'
+  VpcCidr:
+    Type: String
+    Description: Optional - Specifies the CIDR Block of VPC
+    Default: 172.31.0.0/16
+  SubnetCidr1:
+    Type: String
+    Description: Specifies the CIDR Block of Subnet 1
+    Default: 172.31.16.0/20
+  SubnetCidr2:
+    Type: String
+    Description: Specifies the CIDR Block of Subnet 2
+    Default: 172.31.0.0/20
+  SubnetCidr3:
+    Type: String
+    Description: Specifies the CIDR Block of Subnet 3
+    Default: 172.31.32.0/20
+  TargetGroupName:
+    Type: String
+    Description: Specifies name of the target group
+    Default: edfc-alb-default-tg
+  EDFCLambdaUpdateFunctionName:
+    Type: String
+    Description: Specifies name of the target group
+    Default: edfc-lambda-update-cache
+  EDFCLambdaRemoveFunctionName:
+    Type: String
+    Description: Specifies name of the target group
+    Default: edfc-lambda-remove-cache    
+  LambdaZipBucketName:
+    Type: String
+    Description: to hold Lambda code zip file
+    Default: "edfc-lambda-packages-bucket"
+  LambdaUpdateZipName:
+    Type: String
+    Description: Zip file containing Lambda code
+    Default: "edflambdabucket-update.zip"
+  LambdaRemoveZipName:
+    Type: String
+    Description: Zip file containing Lambda code
+    Default: "edflambdabucket-remove.zip"    
+  RedisClusterName:
+    Type: String
+    Description: Name of the edfc redis cluster
+    Default: edfc-redis-cluster
+  NumRedisClusterNodes:
+    Type: String
+    Description: Number of nodes in the redis cluster
+    Default: '1'
+  NATSubnetIds:
+    Type: CommaDelimitedList
+    Description: >
+      Optional - Specifies the Comma separated list of existing VPC Subnet
+      Ids where ECS instances will run
+    Default: subnet-2396e14b,subnet-7d62ce07,subnet-870d1eca
+  EDFServiceAccount:
+    Type: String
+    Description: Service account for EDF
+    Default: svc_edf_user
+  HTTPProxy:
+    Type: String
+    Description: HTTP Proxy for ECS agent and docker deamon
+    Default: "vra-prod-us-west-2-proxy.foxinc.com:8080"
+  EDFCertArn:
+    Type: String
+    Description: ARN of imported certificate
+    Default: arn:aws:acm:us-west-2:621773724723:certificate/cf588e34-579d-4efe-8b87-523b84a69c2b    
+Conditions:
+  CreateEC2LCWithKeyPair:
+    !Not [!Equals [!Ref KeyName, '']]
+  SetEndpointToECSAgent:
+    !Not [!Equals [!Ref EcsEndpoint, '']]  
+  CreateEbsVolume: !And
+    - !Not [!Equals [!Ref EbsVolumeSize, '0']]
+    - !Not [!Equals [!Ref EbsVolumeType, '']]
+    - !Not [!Equals [!Ref DeviceName, '']]
+#  ThirdAZAvailable:
+#    - !Not [!Equals [!Ref SubnetCidr3, '']] 
+Resources:
+  ECSInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Ref ECSInstanceSecurityGroupName
+      GroupDescription: Allow http traffic to ALB from client host
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 10.215.132.0/23
+      - IpProtocol: '-1'
+        FromPort: '0'
+        ToPort: '65535'
+        SourceSecurityGroupId: !Ref ALBAccessSecurityGroup
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '6379'
+        ToPort: '6379'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: '-1'
+        FromPort: '0'
+        ToPort: '65535'
+        CidrIp: 0.0.0.0/0
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref ECSClusterName
+  EcsInstanceLc:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref EcsAmiId
+      InstanceType: !Select [ 0, !Ref EcsInstanceType ]
+      AssociatePublicIpAddress: false 
+      #IamInstanceProfile: !Ref EC2RoleInstanceProfile
+      IamInstanceProfile: !Ref EC2RoleName
+      KeyName: !If [ CreateEC2LCWithKeyPair, !Ref KeyName, !Ref "AWS::NoValue" ]
+      SecurityGroups: [ !Ref ECSInstanceSecurityGroup ]
+      BlockDeviceMappings: !If
+        - CreateEbsVolume
+        -
+          - DeviceName: !Ref DeviceName
+            Ebs:
+             VolumeSize: !Ref EbsVolumeSize
+             VolumeType: !Ref EbsVolumeType
+        - !Ref "AWS::NoValue"
+      UserData: !If
+        - SetEndpointToECSAgent
+        - Fn::Base64: !Sub |
+           #!/bin/bash
+           echo ECS_CLUSTER=${ECSClusterName} >> /etc/ecs/ecs.config
+           echo ECS_BACKEND_HOST=${EcsEndpoint} >> /etc/ecs/ecs.config
+        - Fn::Base64: !Sub |
+           #!/bin/bash
+           echo ECS_CLUSTER=edfc-clstr >> /etc/ecs/ecs.config
+           echo HTTP_PROXY=${HTTPProxy} >> /etc/ecs/ecs.config
+           echo HTTPS_PROXY=${HTTPProxy} >> /etc/ecs/ecs.config
+           echo NO_PROXY=169.254.169.254,169.254.170.2,/var/run/docker.sock,localhost,127.0.0.1,fmc-dtr2-dev.mediacloud.fox,.foxinc.com,artifactory.aws.foxinc.com >> /etc/init/ecs.override >> /etc/ecs/ecs.config
+           echo env HTTP_PROXY=${HTTPProxy} >> /etc/init/ecs.override
+           echo env HTTPS_PROXY=${HTTPProxy} >> /etc/init/ecs.override
+           echo env NO_PROXY=169.254.169.254,169.254.170.2,/var/run/docker.sock,localhost,127.0.0.1,fmc-dtr2-dev.mediacloud.fox,.foxinc.com,artifactory.aws.foxinc.com >> /etc/init/ecs.override
+           echo export HTTP_PROXY=${HTTPProxy} >> /etc/sysconfig/docker
+           echo export HTTPS_PROXY=${HTTPProxy} >> /etc/sysconfig/docker
+           echo export NO_PROXY=localhost,127.0.0.1,fmc-dtr2-dev.mediacloud.fox,169.254.169.254,.foxinc.com,artifactory.aws.foxinc.com >> /etc/sysconfig/docker
+           sudo service docker restart
+           sudo start ecs
+  EcsInstanceAsg:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier: !Ref SubnetIds
+      LaunchConfigurationName: !Ref EcsInstanceLc
+      MinSize: !Ref AsgMinSize
+      MaxSize: !Ref AsgMaxSize
+      DesiredCapacity: !Ref AsgMinSize
+      Tags:
+        -
+          Key: Name
+          Value: !Sub "ECS-${ECSClusterName}-${AWS::StackName}"
+          PropagateAtLaunch: 'true'
+        -
+          Key: Description
+          Value: "This instance is the part of the EDF Hook Auto Scaling group"
+          PropagateAtLaunch: 'true'
+  ALBAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Ref ALBSecurityGroupName
+      GroupDescription: Allow http traffic to ALB from client host
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 0.0.0.0/0        
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: '0'
+        ToPort: '65535'
+        CidrIp: !Ref SubnetCidr1
+      - IpProtocol: tcp
+        FromPort: '0'
+        ToPort: '65535'
+        CidrIp: !Ref SubnetCidr2
+  EcsElasticLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Ref ALBName
+      Scheme: internal
+      Subnets:
+        Ref: SubnetIds
+      SecurityGroups:
+      - Ref: ALBAccessSecurityGroup
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: TargetGroup
+      LoadBalancerArn:
+        Ref: EcsElasticLoadBalancer
+      Port: 80
+      Protocol: HTTP
+  LoadBalancerHTTPSListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Certificates:
+      - CertificateArn: !Ref EDFCertArn
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: TargetGroup
+      LoadBalancerArn:
+        Ref: EcsElasticLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      SslPolicy: ELBSecurityPolicy-2016-08
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref TargetGroupName
+      Port: 80
+      Protocol: HTTP
+      VpcId:
+        Ref: VpcId
+    DependsOn:
+    - EcsElasticLoadBalancer    
+  EDFLambdaUpdateFunction: 
+    DependsOn: EDFRedisCluster
+    Type: "AWS::Lambda::Function"
+    Properties: 
+      FunctionName: !Ref EDFCLambdaUpdateFunctionName
+      Handler: "edflambdabucket.handler"
+      #Role: !GetAtt LambdaS3ExecutionRole.Arn 
+      Role: !Join [ "", ["arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":role/", !Ref LambdaS3ExecutionRoleName ] ]
+      Code: 
+        S3Bucket: !Ref LambdaZipBucketName
+        S3Key: !Ref LambdaUpdateZipName
+      Runtime: "nodejs8.10"
+      Environment:
+        Variables:
+          REDIS_URL: !Join [ "", [ !GetAtt EDFRedisCluster.ConfigurationEndPoint.Address, ":", !GetAtt EDFRedisCluster.ConfigurationEndPoint.Port ] ]
+          HTTP_PROXY_URL: !Join [ "", [ "http://", !Ref HTTPProxy ] ]
+      VpcConfig: 
+        SecurityGroupIds:
+          -
+            Fn::GetAtt:
+            - "ECSInstanceSecurityGroup"
+            - "GroupId"        
+        SubnetIds: !Ref NATSubnetIds
+      Timeout: "25"
+      TracingConfig:
+        Mode: "Active"    
+  EDFLambdaRemoveFunction: 
+    DependsOn: EDFRedisCluster
+    Type: "AWS::Lambda::Function"
+    Properties: 
+      FunctionName: !Ref EDFCLambdaRemoveFunctionName
+      Handler: "edflambdabucket.handler"
+      #Role: !GetAtt LambdaS3ExecutionRole.Arn
+      Role: !Join [ "", ["arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":role/", !Ref LambdaS3ExecutionRoleName ] ]
+      Code: 
+        S3Bucket: !Ref LambdaZipBucketName
+        S3Key: !Ref LambdaRemoveZipName
+      Runtime: "nodejs8.10"
+      Environment:
+        Variables:
+          REDIS_URL: !Join [ "", [ !GetAtt EDFRedisCluster.ConfigurationEndPoint.Address, ":", !GetAtt EDFRedisCluster.ConfigurationEndPoint.Port ] ]
+          HTTP_PROXY_URL: !Join [ "", [ "http://", !Ref HTTPProxy ] ]
+      VpcConfig: 
+        SecurityGroupIds:
+          -
+            Fn::GetAtt:
+            - "ECSInstanceSecurityGroup"
+            - "GroupId"        
+        SubnetIds: !Ref NATSubnetIds
+      Timeout: "25"
+      TracingConfig:
+        Mode: "Active"
+  RedisSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: edfc-redis-sg
+      GroupDescription: Allow http traffic to Redis nodes from client host
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: 'tcp'
+        FromPort: '6379'
+        ToPort: '6379'
+        #CidrIp: 0.0.0.0/0
+        SourceSecurityGroupId: !Ref ECSInstanceSecurityGroup
+  RedisSubnetGroup:
+    Type: "AWS::ElastiCache::SubnetGroup"
+    Properties:
+      CacheSubnetGroupName: "edfc-redis-subnet-group"
+      Description: Subnet group for redis cluster
+      SubnetIds: !Ref NATSubnetIds
+  EDFRedisCluster:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      ReplicationGroupId: edfc-redis-cluster
+      ReplicationGroupDescription: 2-node redis cluster
+      AutomaticFailoverEnabled: true
+      CacheNodeType: cache.t2.micro
+      CacheParameterGroupName: default.redis3.2.cluster.on
+      Engine: redis
+      EngineVersion: 3.2.4
+      NumCacheClusters: 2
+      CacheSubnetGroupName: !Ref RedisSubnetGroup
+      SecurityGroupIds:
+          -
+            Fn::GetAtt:
+            - "RedisSecurityGroup"
+            - "GroupId"
+  EDFPubECRRepo: 
+    Type: "AWS::ECR::Repository"
+    Properties: 
+      RepositoryName: "edfc/publisher-repo"
+      RepositoryPolicyText: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Sid: AllowPushPull
+            Effect: Allow
+            Principal: 
+              AWS: 
+                - !Join [ "", [ "arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":user/", !Ref EDFServiceAccount ] ]
+            Action: 
+              - "ecr:*"
+  EDFSubECRRepo: 
+    Type: "AWS::ECR::Repository"
+    Properties: 
+      RepositoryName: "edfc/subscriber-repo"
+      RepositoryPolicyText: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Sid: AllowPushPull
+            Effect: Allow
+            Principal: 
+              AWS: 
+                - !Join [ "", [ "arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":user/", !Ref EDFServiceAccount ] ]
+            Action: 
+              - "ecr:*"  
+Outputs:
+  EcsInstanceAsgName:
+    Description: Auto Scaling Group Name for ECS Instances
+    Value: !Ref EcsInstanceAsg
+  UsedByECSCreateCluster:
+    Description: Flag used by ECS Create Cluster Wizard
+    Value: 'true'
+  RedisClusterConfigEndpoint:
+    Description: Redis cluster configuration endpoint
+    Value: !Join [ "", [ !GetAtt EDFRedisCluster.ConfigurationEndPoint.Address, ":", !GetAtt EDFRedisCluster.ConfigurationEndPoint.Port ] ]
+  TemplateVersion:
+    Description: The version of the template used by Create Cluster Wizard
+    Value: '1.0.0'
