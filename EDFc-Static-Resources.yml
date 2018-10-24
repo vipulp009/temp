@@ -100,6 +100,12 @@ Parameters:
       Specifies the Name or the Amazon Resource Name (ARN) of the instance
       profile associated with the IAM role for the instance
     Default: edfc-lambda-role
+  LambdaRoleARN:
+    Type: String
+    Description: >
+      Specifies the Name or the Amazon Resource Name (ARN) of the instance
+      profile associated with the IAM role for the instance
+    Default: ''
   EcsEndpoint:
     Type: String
     Description: >
@@ -375,7 +381,8 @@ Resources:
       FunctionName: !Ref EDFCLambdaUpdateFunctionName
       Handler: "edflambdabucket.handler"
       #Role: !GetAtt LambdaS3ExecutionRole.Arn 
-      Role: !Join [ "", ["arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":role/", !Ref LambdaS3ExecutionRoleName ] ]
+      Role: !Ref LambdaRoleARN
+      #Role: !Join [ "", ["arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":role/", !Ref LambdaS3ExecutionRoleName ] ]
       Code: 
         S3Bucket: !Ref LambdaZipBucketName
         S3Key: !Ref LambdaUpdateZipName
@@ -401,7 +408,8 @@ Resources:
       FunctionName: !Ref EDFCLambdaRemoveFunctionName
       Handler: "edflambdabucket.handler"
       #Role: !GetAtt LambdaS3ExecutionRole.Arn
-      Role: !Join [ "", ["arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":role/", !Ref LambdaS3ExecutionRoleName ] ]
+      Role: !Ref LambdaRoleARN
+      #Role: !Join [ "", ["arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":role/", !Ref LambdaS3ExecutionRoleName ] ]
       Code: 
         S3Bucket: !Ref LambdaZipBucketName
         S3Key: !Ref LambdaRemoveZipName
@@ -467,7 +475,8 @@ Resources:
             Effect: Allow
             Principal: 
               AWS: 
-                - !Join [ "", [ "arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":user/", !Ref EDFServiceAccount ] ]
+                #- !Join [ "", [ "arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":user/", !Ref EDFServiceAccount ] ]
+                - !Ref EDFServiceAccount
             Action: 
               - "ecr:*"
   EDFSubECRRepo: 
@@ -482,7 +491,8 @@ Resources:
             Effect: Allow
             Principal: 
               AWS: 
-                - !Join [ "", [ "arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":user/", !Ref EDFServiceAccount ] ]
+                #- !Join [ "", [ "arn:aws:iam::", { "Ref": "AWS::AccountId" }, ":user/", !Ref EDFServiceAccount ] ]
+                - !Ref EDFServiceAccount
             Action: 
               - "ecr:*"  
 Outputs:

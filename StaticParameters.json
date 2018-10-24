@@ -117,6 +117,12 @@
 	"UsePreviousValue": false
 },
 {
+        "ParameterKey": "LambdaRoleARN",
+        "ParameterValue": "arn:aws:iam::432831516745:role/edfc-lambda-role",
+        "ResolvedValue": "",
+        "UsePreviousValue": false
+},
+{
 	"ParameterKey": "ECSClusterName",
 	"ParameterValue": "edfc-clstr",
 	"ResolvedValue": "",
