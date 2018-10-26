@@ -270,7 +270,7 @@ Resources:
       InstanceType: !Select [ 0, !Ref EcsInstanceType ]
       AssociatePublicIpAddress: false 
       #IamInstanceProfile: !Ref EC2RoleInstanceProfile
-      IamInstanceProfile: !Ref EC2RoleName
+      IamInstanceProfile: !Ref EC2RoleARN
       KeyName: !If [ CreateEC2LCWithKeyPair, !Ref KeyName, !Ref "AWS::NoValue" ]
       SecurityGroups: [ !Ref ECSInstanceSecurityGroup ]
       BlockDeviceMappings: !If
