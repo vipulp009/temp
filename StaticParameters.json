@@ -118,7 +118,19 @@
 },
 {
         "ParameterKey": "LambdaRoleARN",
-        "ParameterValue": "arn:aws:iam::432831516745:role/edfc-lambda-role",
+        "ParameterValue": "arn:aws:iam::123:role/edfc-lambda-role",
+        "ResolvedValue": "",
+        "UsePreviousValue": false
+},
+{
+        "ParameterKey": "EC2RoleARN",
+        "ParameterValue": "arn:aws:iam::123:role/edfc-ec2-role",
+        "ResolvedValue": "",
+        "UsePreviousValue": false
+},
+{
+        "ParameterKey": "ECSRoleARN",
+        "ParameterValue": "arn:aws:iam::123:role/edfc-ecs-role",
         "ResolvedValue": "",
         "UsePreviousValue": false
 },
