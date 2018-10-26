@@ -106,6 +106,18 @@ Parameters:
       Specifies the Name or the Amazon Resource Name (ARN) of the instance
       profile associated with the IAM role for the instance
     Default: ''
+  EC2RoleARN:
+    Type: String
+    Description: >
+      Specifies the Name or the Amazon Resource Name (ARN) of the instance
+      profile associated with the IAM role for the instance
+    Default: ''
+  ECSRoleARN:
+    Type: String
+    Description: >
+      Specifies the Name or the Amazon Resource Name (ARN) of the instance
+      profile associated with the IAM role for the instance
+    Default: ''
   EcsEndpoint:
     Type: String
     Description: >
