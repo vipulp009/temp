@@ -1,0 +1,7 @@
+1) Health Monitoring Script resolved
+2) Jenkins deployment automation for SQL, Weblogic App for UIM
+3) OSM Heap Memory Issue
+4) SOP created while deploying in OSM COM-SOM to pause AIA and OSB to OSM-COM,SOM
+5) Ongoing support for issues
+6) Fixed Preprod UIM
+7) 
